@@ -20,6 +20,11 @@ module.exports = function(webserver, api) {
         })
     });
 
+    webserver.put('/admin/api/scripts/:command', function(req, res) {
+        api.deleteScript(req.params.command).then(function(response) {
+            res.json(response);
+        })
+    })
 
     // receives: command, user
     webserver.post('/admin/api/script', function(req, res) {

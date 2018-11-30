@@ -75,6 +75,24 @@ module.exports = function(db) {
         });
     }
 
+    api.deleteScript = function(command) {
+        return new Promise(function(resolve, reject) {
+            if (db === null) {
+                api.getScripts().then(function(scripts) {
+                    var new_scripts = scripts.filter(function(script) {
+                        return script.command != command
+                    });
+                    api.writeScripts(new_scripts);
+                    resolve(new_scripts);
+                });
+            } else {
+                db.collection('scripts').deleteOne({'command': command}, function(err, resp) {
+                    api.getScripts().then(function(response) {
+                        resolve(response);
+                    })
+                })
+            }
+        });
     }
 
     api.saveScripts = function(update) {
