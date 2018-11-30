@@ -43,6 +43,7 @@ module.exports = function(db) {
             }
 
             scripts = new_scripts;
+            api.mapTriggers();
             resolve(scripts);
         });
 
@@ -63,6 +64,7 @@ module.exports = function(db) {
             try {
                 if (db === null) {
                     scripts = api.writeScriptsToFile(new_scripts, alt_path);
+                    api.mapTriggers();
                 } else {
                     scripts = api.writeScriptsToDb(new_scripts);
                 }
@@ -70,7 +72,6 @@ module.exports = function(db) {
                 return reject(err);
             }
 
-            api.mapTriggers();
             resolve(scripts);
         });
     }
