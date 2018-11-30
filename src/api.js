@@ -77,6 +77,66 @@ module.exports = function(db) {
 
     }
 
+    api.saveScripts = function(update) {
+        return new Promise(function(resolve, reject) {
+            if (db === null) {
+                // TODO: ensure modified is not in past
+                // update.modified = new Date();
+                api.getScripts().then(function(scripts) {
+                    var found = false;
+                    for (var s = 0; s < scripts.length; s++) {
+                        if (scripts[s].command == update.command) {
+                            found = s;
+                            console.log('found timestamp', scripts[s].modified, 'incoming timestamp:', update.modified);
+                        }
+                    }
+        
+                    if (found === false) {
+        
+                        update.modified = new Date();
+                        scripts.push(update);
+        
+                        api.writeScripts(scripts).then(function() {
+                            resolve({
+                                success: true,
+                                data: update,
+                            });
+                        });
+        
+                    } else if (new Date(scripts[found].modified) > new Date(update.modified)) {
+        
+                        // if the version in the database was more recently modified, reject this update!
+                        resolve({
+                            success: false,
+                            message: 'Script was modified more recently, please refresh your browser to load the latest',
+                        });
+        
+                    } else {
+        
+                        scripts[found] = update;
+                        scripts[found].modified = new Date();
+                        console.log('Updating modified date to', scripts[found].modified);
+        
+                        api.writeScriptsToFile(scripts).then(function() {
+                            resolve({
+                                success: true,
+                                data: update,
+                            });
+                        });
+                    }
+                });
+            } else {
+                update.modified = new Date();
+                delete update._id;
+                db.collection('scripts').updateOne({'command': update.command}, { $set: update }, {upsert: true}, function(err, res) {
+                    resolve({
+                        success: true,
+                        data: update,
+                    });
+                });
+            }
+        });
+    }
 
 
     api.mapTriggers = function() {
