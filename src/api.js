@@ -20,8 +20,6 @@ module.exports = function(db) {
 
     }
 
-
-
     api.loadScriptsFromFile = function(src) {
         return new Promise(function(resolve, reject) {
             try {
@@ -31,9 +29,7 @@ module.exports = function(db) {
             }
 
             PATH_TO_SCRIPTS = src;
-            api.mapTriggers();
             resolve(scripts);
-
         });
     }
 
@@ -47,9 +43,37 @@ module.exports = function(db) {
             }
 
             scripts = new_scripts;
+            resolve(scripts);
+        });
+
+    }
+
+    api.writeScriptsToDb = function(new_scripts) {
+        return new Promise(function(resolve, reject) {
+            db.collection('scripts').insertMany(scripts, function(err, result) {
+                console.log(err);
+
+                resolve(result.toArray());
+            });
+        });
+    }
+
+    api.writeScripts = function(new_scripts, alt_path) {
+        return new Promise(function(resolve, reject) {
+            try {
+                if (db === null) {
+                    scripts = api.writeScriptsToFile(new_scripts, alt_path);
+                } else {
+                    scripts = api.writeScriptsToDb(new_scripts);
+                }
+            } catch(err) {
+                return reject(err);
+            }
+
             api.mapTriggers();
             resolve(scripts);
         });
+    }
 
     }
 
