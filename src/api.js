@@ -180,6 +180,12 @@ module.exports = function(db) {
     api.evaluateTriggers = function(query) {
 
         return new Promise(function(resolve, reject) {
+            if (db) {
+                api.getScripts().then(function(results) {
+                    scripts = results;
+                    api.mapTriggers();
+                });
+            }
             var res = [];
 
             // check regular expressions first
